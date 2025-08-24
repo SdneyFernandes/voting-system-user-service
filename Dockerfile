@@ -9,9 +9,9 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=builder /app/target/*.jar app.jar
-EXPOSE 8083
+EXPOSE 8080
 
-ENV SERVER_PORT=8083
+ENV SERVER_PORT=${PORT}
 ENV SPRING_APPLICATION_NAME=voting-system-user-service
 ENV EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://voting-system-discovery.onrender.com:8761/eureka
 ENV EUREKA_INSTANCE_PREFERIPADDRESS=true
