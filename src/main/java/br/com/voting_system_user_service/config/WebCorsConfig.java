@@ -15,7 +15,11 @@ public class WebCorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOriginPatterns("http://localhost:3000")
+                        .allowedOrigins( // ⬅️ TROQUE allowedOriginPatterns POR allowedOrigins
+                            "http://localhost:3000", 
+                            "https://voting-frontend-blpn.onrender.com",
+                            "https://voting-system-api-gateway.onrender.com" // ⬅️ ADICIONE O GATEWAY!
+                        )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true)
@@ -23,4 +27,4 @@ public class WebCorsConfig {
             }
         };
     }
-} 
+}

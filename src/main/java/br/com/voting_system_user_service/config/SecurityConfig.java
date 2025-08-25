@@ -34,19 +34,19 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/actuator/health",
-                                "/api/users/register",
-                                "/api/users/login",
-                                "/api/auth/service-token",
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/swagger-resources/**",
-                                "/webjars/**",
-                                "/h2-console/**",
-                                "/api/users/{id}"
-                        ).permitAll()
+            .authorizeHttpRequests(auth -> auth
+                    .requestMatchers(
+                            "/actuator/health",
+                            "/api/users/register",
+                            "/api/users/login",
+                            "/api/auth/service-token",
+                            "/swagger-ui/**",
+                            "/v3/api-docs/**",
+                            "/swagger-resources/**",
+                            "/webjars/**",
+                            "/h2-console/**",
+                            "/api/users/{id}"
+                    ).permitAll()
                         .requestMatchers("/api/users").hasRole("ADMIN")
                         .requestMatchers("/api/internal/**").permitAll()
                         .requestMatchers("/api/users/{userName}").hasRole("ADMIN")
@@ -61,11 +61,13 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(preAuthenticatedProcessingFilter(), UsernamePasswordAuthenticationFilter.class);
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+            
+    // ⬇️ ADICIONE ESTA VERIFICAÇÃO - SÓ APLICAR FILTRO PARA ROTAS AUTENTICADAS
+    http.addFilterBefore(preAuthenticatedProcessingFilter(), UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
-    }
+    return http.build();
+}
 
     @Bean
     public AbstractPreAuthenticatedProcessingFilter preAuthenticatedProcessingFilter() {
