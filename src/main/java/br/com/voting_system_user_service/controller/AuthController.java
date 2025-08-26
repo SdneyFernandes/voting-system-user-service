@@ -20,11 +20,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Autenticação", description = "Endpoints públicos para login e registrrro")
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = {
-    "http://localhost:3000", 
-    "https://voting-frontend-blpn.onrender.com",
-    "https://voting-system-api-gateway.onrender.com" // ⬅️ ADICIONE O GATEWAY!
-}, allowCredentials = "true")
 public class AuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
