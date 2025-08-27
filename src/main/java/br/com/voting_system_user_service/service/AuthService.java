@@ -80,15 +80,22 @@ public class AuthService {
     }
 
     public void logoutUser(HttpServletResponse response) {
-    logger.info("Recebida requisição para logout de usuário (AuthService)");
+        logger.info("Recebida requisição para logout de usuário (AuthService)");
 
-    // ✅ CORREÇÃO: Cookies de logout também precisam dos mesmos atributos
-    String userIdCookieStr = "userId=null; Max-Age=0; Path=/; Secure; SameSite=None; Domain=voting-system-user-service.onrender.com";
-    response.addHeader("Set-Cookie", userIdCookieStr);
+        Cookie userIdCookie = new Cookie("userId", null);
+        userIdCookie.setHttpOnly(false);
+        userIdCookie.setSecure(false);
+        userIdCookie.setPath("/");
+        userIdCookie.setMaxAge(0);
+        response.addCookie(userIdCookie);
 
-    String roleCookieStr = "role=null; Max-Age=0; Path=/; Secure; SameSite=None; Domain=voting-system-user-service.onrender.com";
-    response.addHeader("Set-Cookie", roleCookieStr);
+        Cookie roleCookie = new Cookie("role", null);
+        roleCookie.setHttpOnly(false);
+        roleCookie.setSecure(false);
+        roleCookie.setPath("/");
+        roleCookie.setMaxAge(0);
+        response.addCookie(roleCookie);
 
-    logger.info("Cookies de usuário removidos com atributos corretos (AuthService)");
-}
+        logger.info("Cookies de usuário removidos (AuthService)");
+    }
 }
