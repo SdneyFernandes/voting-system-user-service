@@ -47,13 +47,9 @@ public class AuthController {
 
     @Operation(summary = "Login", description = "Método para logar usuário")
     @PostMapping("/login")
-    @PostMapping("/login")
 public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletResponse response) {
     // 🔹 1. Autentica usuário
     User user = authService.authenticate(request.getUsername(), request.getPassword());
-
-    // 🔹 2. Gera token
-    String token = jwtService.generateToken(user);
 
     // 🔹 3. Cria cookies
     ResponseCookie userIdCookie = ResponseCookie.from("userId", String.valueOf(user.getId()))
