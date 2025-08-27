@@ -46,34 +46,34 @@ public class AuthController {
     }
 
     @Operation(summary = "Login", description = "Método para logar usuário")
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request, HttpServletResponse response) {
-        logger.info("Recebida requisição para login de usuário");
-        try {
-            UserDTO user = authService.loginUser(request);
+@PostMapping("/login")
+public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request, HttpServletResponse response) {
+    logger.info("Recebida requisição para login de usuário");
+    try {
+        UserDTO user = authService.loginUser(request);
 
-            Cookie userIdCookie = new Cookie("userId", user.getId().toString());
-            userIdCookie.setHttpOnly(false);
-            userIdCookie.setSecure(false);
-            userIdCookie.setPath("/");
-            userIdCookie.setMaxAge(3600);
-            response.addCookie(userIdCookie);
+        // ✅ CORREÇÃO: Usar addHeader para controlar melhor os atributos dos cookies
+        String userIdCookieStr = String.format(
+            "userId=%s; Max-Age=3600; Path=/; Secure; SameSite=None; Domain=voting-system-user-service.onrender.com",
+            user.getId().toString()
+        );
+        response.addHeader("Set-Cookie", userIdCookieStr);
 
-            Cookie roleCookie = new Cookie("role", user.getRole().toString());
-            roleCookie.setHttpOnly(false);
-            roleCookie.setSecure(false);
-            roleCookie.setPath("/");
-            roleCookie.setMaxAge(3600);
-            response.addCookie(roleCookie);
+        String roleCookieStr = String.format(
+            "role=%s; Max-Age=3600; Path=/; Secure; SameSite=None; Domain=voting-system-user-service.onrender.com",
+            user.getRole().toString()
+        );
+        response.addHeader("Set-Cookie", roleCookieStr);
 
-            return ResponseEntity.ok(new AuthResponse("Login realizado com sucesso", null));
-        } catch (RuntimeException ex) {
-            logger.error("Erro ao realizar login: {}", ex.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new AuthResponse(ex.getMessage(), null));
-        }
+        logger.info("Cookies configurados com Secure e SameSite=None");
+        return ResponseEntity.ok(new AuthResponse("Login realizado com sucesso", null));
+        
+    } catch (RuntimeException ex) {
+        logger.error("Erro ao realizar login: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new AuthResponse(ex.getMessage(), null));
     }
-
+}
     @Operation(summary = "Logout", description = "Método para logout usuário")
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletResponse response) {
