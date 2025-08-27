@@ -47,32 +47,47 @@ public class AuthController {
 
     @Operation(summary = "Login", description = "Método para logar usuário")
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request, HttpServletResponse response) {
-        logger.info("Recebida requisição para login de usuário");
-        try {
-            UserDTO user = authService.loginUser(request);
+    @PostMapping("/login")
+public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletResponse response) {
+    // 🔹 1. Autentica usuário
+    User user = authService.authenticate(request.getUsername(), request.getPassword());
 
-            Cookie userIdCookie = new Cookie("userId", user.getId().toString());
-            userIdCookie.setHttpOnly(false);
-            userIdCookie.setSecure(false);
-            userIdCookie.setPath("/");
-            userIdCookie.setMaxAge(3600);
-            response.addCookie(userIdCookie);
+    // 🔹 2. Gera token
+    String token = jwtService.generateToken(user);
 
-            Cookie roleCookie = new Cookie("role", user.getRole().toString());
-            roleCookie.setHttpOnly(false);
-            roleCookie.setSecure(false);
-            roleCookie.setPath("/");
-            roleCookie.setMaxAge(3600);
-            response.addCookie(roleCookie);
+    // 🔹 3. Cria cookies
+    ResponseCookie userIdCookie = ResponseCookie.from("userId", String.valueOf(user.getId()))
+            .httpOnly(true)          // 🔒 protegido contra JS
+            .secure(true)            // 🔒 só HTTPS
+            .sameSite("None")        // ✅ permite cross-site
+            .path("/")
+            .maxAge(3600)            // 1 hora
+            .build();
 
-            return ResponseEntity.ok(new AuthResponse("Login realizado com sucesso", null));
-        } catch (RuntimeException ex) {
-            logger.error("Erro ao realizar login: {}", ex.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new AuthResponse(ex.getMessage(), null));
-        }
-    }
+    ResponseCookie roleCookie = ResponseCookie.from("role", user.getRole().name())
+            .httpOnly(true)
+            .secure(true)
+            .sameSite("None")
+            .path("/")
+            .maxAge(3600)
+            .build();
+
+    ResponseCookie tokenCookie = ResponseCookie.from("token", token)
+            .httpOnly(true)
+            .secure(true)
+            .sameSite("None")
+            .path("/")
+            .maxAge(3600)
+            .build();
+
+    // 🔹 4. Adiciona os cookies no header
+    response.addHeader(HttpHeaders.SET_COOKIE, userIdCookie.toString());
+    response.addHeader(HttpHeaders.SET_COOKIE, roleCookie.toString());
+    response.addHeader(HttpHeaders.SET_COOKIE, tokenCookie.toString());
+
+    return ResponseEntity.ok("Login successful");
+}
+
 
     @Operation(summary = "Logout", description = "Método para logout usuário")
     @PostMapping("/logout")
