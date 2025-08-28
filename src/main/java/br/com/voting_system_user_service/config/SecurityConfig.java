@@ -46,11 +46,10 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // ADMIN
-                        .requestMatchers(HttpMethod.GET, "/api/users/*").hasRole("ADMIN")
-                        .requestMatchers("/api/users").hasRole("ADMIN")
-                        .requestMatchers("/api/internal/**").permitAll()
-                        .requestMatchers("/api/votes_session/create").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/votes_session/*/delete").hasRole("ADMIN")
+.requestMatchers("/api/users/**").hasRole("ADMIN")
+.requestMatchers("/api/votes_session/create").hasRole("ADMIN")
+.requestMatchers(HttpMethod.DELETE, "/api/votes_session/*/delete").hasRole("ADMIN")
+.requestMatchers("/api/internal/**").permitAll()
 
                         // Autenticados
                         .requestMatchers("/api/votes_session/**").authenticated()
