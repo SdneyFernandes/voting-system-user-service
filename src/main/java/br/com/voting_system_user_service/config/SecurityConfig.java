@@ -46,12 +46,12 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // ADMIN
-.requestMatchers("/api/users/**").hasRole("ADMIN")
-.requestMatchers("/api/votes_session/create").hasRole("ADMIN")
-.requestMatchers(HttpMethod.DELETE, "/api/votes_session/*/delete").hasRole("ADMIN")
-.requestMatchers("/api/internal/**").permitAll()
+                        .requestMatchers("/api/users/**").hasAuthority("ADMIN")
+                        .requestMatchers("/api/votes_session/create").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/votes_session/*/delete").hasAuthority("ADMIN")
+                        .requestMatchers("/api/internal/**").permitAll()
 
-                        // Autenticados
+                        // Autenticados (USER ou ADMIN)
                         .requestMatchers("/api/votes_session/**").authenticated()
                         .requestMatchers("/api/votes/**").authenticated()
                         .requestMatchers("/api/users/me").authenticated()
@@ -96,10 +96,13 @@ public class SecurityConfig {
                 throw new BadCredentialsException("Cabeçalhos X-User-Id e X-User-Role são obrigatórios");
             }
 
-            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
-            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userId, null, authorities);
+            // 🔹 Agora usamos exatamente a role que veio do cookie/header (ADMIN ou USER)
+            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
 
-            logger.info("Usuário autenticado corretamente: {}", userId);
+            UsernamePasswordAuthenticationToken auth =
+                    new UsernamePasswordAuthenticationToken(userId, null, authorities);
+
+            logger.info("Usuário autenticado corretamente: {} com role {}", userId, role);
             return auth;
         };
     }
