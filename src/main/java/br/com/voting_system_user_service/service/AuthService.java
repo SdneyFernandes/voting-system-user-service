@@ -80,22 +80,28 @@ public class AuthService {
     }
 
     public void logoutUser(HttpServletResponse response) {
-        logger.info("Recebida requisição para logout de usuário (AuthService)");
+    logger.info("Recebida requisição para logout de usuário (AuthService)");
 
-        Cookie userIdCookie = new Cookie("userId", null);
-        userIdCookie.setHttpOnly(false);
-        userIdCookie.setSecure(false);
-        userIdCookie.setPath("/");
-        userIdCookie.setMaxAge(0);
-        response.addCookie(userIdCookie);
+    // 🔹 Usar ResponseCookie consistentemente com o login
+    ResponseCookie userIdCookie = ResponseCookie.from("userId", "")
+        .httpOnly(false) // ✅ Mesmo que login
+        .secure(true)
+        .sameSite("None")
+        .path("/")
+        .maxAge(0) // ✅ Expira imediatamente
+        .build();
 
-        Cookie roleCookie = new Cookie("role", null);
-        roleCookie.setHttpOnly(false);
-        roleCookie.setSecure(false);
-        roleCookie.setPath("/");
-        roleCookie.setMaxAge(0);
-        response.addCookie(roleCookie);
+    ResponseCookie roleCookie = ResponseCookie.from("role", "")
+        .httpOnly(false) // ✅ Mesmo que login
+        .secure(true)
+        .sameSite("None")
+        .path("/")
+        .maxAge(0)
+        .build();
 
-        logger.info("Cookies de usuário removidos (AuthService)");
-    }
+    response.addHeader(HttpHeaders.SET_COOKIE, userIdCookie.toString());
+    response.addHeader(HttpHeaders.SET_COOKIE, roleCookie.toString());
+
+    logger.info("Cookies de usuário removidos (AuthService)");
+}
 }

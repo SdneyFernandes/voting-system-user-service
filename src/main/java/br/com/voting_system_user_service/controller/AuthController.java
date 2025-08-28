@@ -49,41 +49,46 @@ public class AuthController {
 
 
     @Operation(summary = "Login", description = "Método para logar usuário")
-    @PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> login(@RequestBody @Valid LoginRequest request, HttpServletResponse response) {
-        logger.info("Tentando login para email {}", request.getEmail());
+@PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
+public ResponseEntity<?> login(@RequestBody @Valid LoginRequest request, HttpServletResponse response) {
+    logger.info("Tentando login para email {}", request.getEmail());
 
-        try {
-            // 🔹 chama o service existente
-            UserDTO user = authService.loginUser(request);
+    try {
+        // 🔹 chama o service existente
+        UserDTO user = authService.loginUser(request);
 
-            // 🔹 cria cookies
-            ResponseCookie userIdCookie = ResponseCookie.from("userId", String.valueOf(user.getId()))
-                    .httpOnly(true)
-                    .secure(true) // só HTTPS
-                    .sameSite("None")
-                    .path("/")
-                    .maxAge(3600)
-                    .build();
+        // 🔹 cria cookies SEM httpOnly (acessíveis via JavaScript)
+        ResponseCookie userIdCookie = ResponseCookie.from("userId", String.valueOf(user.getId()))
+                .httpOnly(false) // ✅ ALTERADO: false para acesso via JS
+                .secure(true) // só HTTPS
+                .sameSite("None")
+                .path("/")
+                .maxAge(3600)
+                .build();
 
-            ResponseCookie roleCookie = ResponseCookie.from("role", user.getRole().name())
-                    .httpOnly(true)
-                    .secure(true)
-                    .sameSite("None")
-                    .path("/")
-                    .maxAge(3600)
-                    .build();
+        ResponseCookie roleCookie = ResponseCookie.from("role", user.getRole().name())
+                .httpOnly(false) // ✅ ALTERADO: false para acesso via JS
+                .secure(true)
+                .sameSite("None")
+                .path("/")
+                .maxAge(3600)
+                .build();
 
-            // 🔹 adiciona cookies na resposta
-            response.addHeader(HttpHeaders.SET_COOKIE, userIdCookie.toString());
-            response.addHeader(HttpHeaders.SET_COOKIE, roleCookie.toString());
+        // 🔹 adiciona cookies na resposta
+        response.addHeader(HttpHeaders.SET_COOKIE, userIdCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, roleCookie.toString());
 
-            return ResponseEntity.ok("Login successful");
-        } catch (RuntimeException ex) {
-            logger.warn("Falha no login: {}", ex.getMessage());
-            return ResponseEntity.status(401).body("Credenciais inválidas");
-        }
+        // ✅ Retornar dados do usuário também no corpo da resposta
+        return ResponseEntity.ok().body(Map.of(
+            "message", "Login successful",
+            "userId", user.getId(),
+            "role", user.getRole().name()
+        ));
+    } catch (RuntimeException ex) {
+        logger.warn("Falha no login: {}", ex.getMessage());
+        return ResponseEntity.status(401).body("Credenciais inválidas");
     }
+}
 
     @Operation(summary = "Logout", description = "Método para logout do usuário")
     @PostMapping("/logout")
