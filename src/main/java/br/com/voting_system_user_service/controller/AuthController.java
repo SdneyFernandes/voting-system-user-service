@@ -71,6 +71,7 @@ public ResponseEntity<?> login(@RequestBody @Valid LoginRequest request, HttpSer
                 .sameSite("None")
                 .path("/")
                 .maxAge(3600)
+                .partitioned(true)
                 .build();
 
         ResponseCookie roleCookie = ResponseCookie.from("role", user.getRole().name())
@@ -79,6 +80,7 @@ public ResponseEntity<?> login(@RequestBody @Valid LoginRequest request, HttpSer
                 .sameSite("None")
                 .path("/")
                 .maxAge(3600)
+                .partitioned(true)
                 .build();
 
         // 🔹 adiciona cookies na resposta
