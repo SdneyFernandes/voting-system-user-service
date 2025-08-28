@@ -2,6 +2,8 @@ package br.com.voting_system_user_service.controller;
 
 import br.com.voting_system_user_service.dto.LoginRequest;
 import br.com.voting_system_user_service.dto.UserDTO;
+import br.com.voting_system_user_service.dto.RegisterRequest;   
+import br.com.voting_system_user_service.dto.AuthResponse;     
 import br.com.voting_system_user_service.service.AuthService;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 
 @Tag(name = "Autenticação", description = "Endpoints públicos para login e registro")
 @RestController

@@ -9,5 +9,7 @@ package br.com.voting_system_user_service.dto;
  * Contém uma mensagem e opcionalmente um token JWT.
  */
 
-public record AuthResponse(String message, String token) {
+public record AuthResponse(String message, UserDTO user) {
+    
 }
+
