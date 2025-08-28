@@ -31,36 +31,36 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        // Rotas públicas
-                        .requestMatchers(
-                                "/actuator/health",
-                                "/api/users/register",
-                                "/api/users/login",
-                                "/api/auth/service-token",
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/swagger-resources/**",
-                                "/webjars/**",
-                                "/h2-console/**"
-                        ).permitAll()
+            .authorizeHttpRequests(auth -> auth
+                // Rotas públicas
+                .requestMatchers(
+                        "/actuator/health",
+                        "/api/users/register",
+                        "/api/users/login",
+                        "/api/auth/service-token",
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**",
+                        "/swagger-resources/**",
+                        "/webjars/**",
+                        "/h2-console/**"
+                ).permitAll()
 
-                        // ADMIN
-                        .requestMatchers("/api/users/**").hasAuthority("ADMIN")
-                        .requestMatchers("/api/votes_session/create").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/votes_session/*/delete").hasAuthority("ADMIN")
-                        .requestMatchers("/api/internal/**").permitAll()
+                // ADMIN
+                .requestMatchers("/api/users/**").hasAuthority("ADMIN")
+                .requestMatchers("/api/votes_session/create").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/votes_session/*/delete").hasAuthority("ADMIN")
+                .requestMatchers("/api/internal/**").permitAll()
 
-                        // Autenticados (USER ou ADMIN)
-                        .requestMatchers("/api/votes_session/**").authenticated()
-                        .requestMatchers("/api/votes/**").authenticated()
-                        .requestMatchers("/api/users/me").authenticated()
+                // Autenticados (USER ou ADMIN)
+                .requestMatchers("/api/votes_session/**").authenticated()
+                .requestMatchers("/api/votes/**").authenticated()
+                .requestMatchers("/api/users/me").authenticated()
 
-                        // Fallback
-                        .anyRequest().authenticated()
-                )
-                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                // Fallback
+                .anyRequest().authenticated()
+            )
+            .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http.addFilterBefore(preAuthenticatedProcessingFilter(), UsernamePasswordAuthenticationFilter.class);
 
@@ -96,13 +96,13 @@ public class SecurityConfig {
                 throw new BadCredentialsException("Cabeçalhos X-User-Id e X-User-Role são obrigatórios");
             }
 
-            // 🔹 Agora usamos exatamente a role que veio do cookie/header (ADMIN ou USER)
+            // 🔹 Usa a role como veio no header (ex: ADMIN ou USER)
             List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
 
             UsernamePasswordAuthenticationToken auth =
-                    new UsernamePasswordAuthenticationToken(userId, null, authorities);
+                    new UsernamePasswordAuthenticationToken(userId, "N/A", authorities);
 
-            logger.info("Usuário autenticado corretamente: {} com role {}", userId, role);
+            logger.info("Usuário autenticado corretamente: {} com authorities {}", userId, authorities);
             return auth;
         };
     }
