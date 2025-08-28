@@ -1,5 +1,3 @@
-// src/main/java/br/com/voting_system_user_service/config/SecurityConfig.java
-
 package br.com.voting_system_user_service.config;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,42 +30,43 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                    .requestMatchers(
-                            "/actuator/health",
-                            "/api/users/register",
-                            "/api/users/login",
-                            "/api/auth/service-token",
-                            "/swagger-ui/**",
-                            "/v3/api-docs/**",
-                            "/swagger-resources/**",
-                            "/webjars/**",
-                            "/h2-console/**",
-                            "/api/users/{id}"
-                    ).permitAll()
+        http.csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        // Rotas públicas
+                        .requestMatchers(
+                                "/actuator/health",
+                                "/api/users/register",
+                                "/api/users/login",
+                                "/api/auth/service-token",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/webjars/**",
+                                "/h2-console/**"
+                        ).permitAll()
+
+                        // ADMIN
+                        .requestMatchers(HttpMethod.GET, "/api/users/*").hasRole("ADMIN")
                         .requestMatchers("/api/users").hasRole("ADMIN")
                         .requestMatchers("/api/internal/**").permitAll()
-                        .requestMatchers("/api/users/{userName}").hasRole("ADMIN")
                         .requestMatchers("/api/votes_session/create").hasRole("ADMIN")
-                        .requestMatchers("/api/votes_session/{id}").hasRole("ADMIN")
-                        .requestMatchers("/api/votes_session/{id}/delete").hasRole("ADMIN")
-                        .requestMatchers("/api/votes_session").authenticated()
-                        .requestMatchers("/api/votes_session/{id}").authenticated()
-                        .requestMatchers("/api/votes_session/{id}/results").authenticated()
-                        .requestMatchers("/api/votes/{voteSessionId}/cast").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/votes_session/*/delete").hasRole("ADMIN")
+
+                        // Autenticados
+                        .requestMatchers("/api/votes_session/**").authenticated()
+                        .requestMatchers("/api/votes/**").authenticated()
                         .requestMatchers("/api/users/me").authenticated()
+
+                        // Fallback
                         .anyRequest().authenticated()
                 )
                 .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-            
-    // ⬇️ ADICIONE ESTA VERIFICAÇÃO - SÓ APLICAR FILTRO PARA ROTAS AUTENTICADAS
-    http.addFilterBefore(preAuthenticatedProcessingFilter(), UsernamePasswordAuthenticationFilter.class);
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-    return http.build();
-}
+        http.addFilterBefore(preAuthenticatedProcessingFilter(), UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
 
     @Bean
     public AbstractPreAuthenticatedProcessingFilter preAuthenticatedProcessingFilter() {
@@ -110,4 +109,4 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-} 
+}
