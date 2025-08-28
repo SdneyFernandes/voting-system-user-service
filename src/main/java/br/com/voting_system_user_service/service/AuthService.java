@@ -14,6 +14,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+// ... outros imports existentes
+import org.springframework.http.HttpHeaders; // ✅ Adicionar
+import org.springframework.http.ResponseCookie; // ✅ Adicionar
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -84,21 +89,22 @@ public class AuthService {
 
     // 🔹 Usar ResponseCookie consistentemente com o login
     ResponseCookie userIdCookie = ResponseCookie.from("userId", "")
-        .httpOnly(false) // ✅ Mesmo que login
-        .secure(true)
-        .sameSite("None")
-        .path("/")
-        .maxAge(0) // ✅ Expira imediatamente
-        .build();
-
-    ResponseCookie roleCookie = ResponseCookie.from("role", "")
-        .httpOnly(false) // ✅ Mesmo que login
+        .httpOnly(false)
         .secure(true)
         .sameSite("None")
         .path("/")
         .maxAge(0)
         .build();
 
+    ResponseCookie roleCookie = ResponseCookie.from("role", "")
+        .httpOnly(false)
+        .secure(true)
+        .sameSite("None")
+        .path("/")
+        .maxAge(0)
+        .build();
+
+    // ✅ CORREÇÃO: Usar addHeader corretamente
     response.addHeader(HttpHeaders.SET_COOKIE, userIdCookie.toString());
     response.addHeader(HttpHeaders.SET_COOKIE, roleCookie.toString());
 
