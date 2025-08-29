@@ -70,7 +70,6 @@ public ResponseEntity<?> login(@RequestBody @Valid LoginRequest request, HttpSer
                 .secure(true) // só HTTPS
                 .sameSite("None")
                 .path("/")
-                .domain("voting-system-api-gateway.onrender.com")
                 .maxAge(3600)
                 .build();
 
@@ -79,7 +78,6 @@ public ResponseEntity<?> login(@RequestBody @Valid LoginRequest request, HttpSer
                 .secure(true)
                 .sameSite("None")
                 .path("/")
-                .domain("voting-system-api-gateway.onrender.com")
                 .maxAge(3600)
                 .build();
 
