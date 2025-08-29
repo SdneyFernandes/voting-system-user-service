@@ -46,9 +46,9 @@ public class SecurityConfig {
                 ).permitAll()
 
                 // ADMIN
-                .requestMatchers("/api/users/**").hasAuthority("ADMIN")
-                .requestMatchers("/api/votes_session/create").hasAuthority("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/votes_session/*/delete").hasAuthority("ADMIN")
+                .requestMatchers("/api/users/**").hasRole("ADMIN")
+                .requestMatchers("/api/votes_session/create").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/votes_session/*/delete").hasRole("ADMIN")
                 .requestMatchers("/api/internal/**").permitAll()
 
                 // Autenticados (USER ou ADMIN)
@@ -96,8 +96,10 @@ public class SecurityConfig {
                 throw new BadCredentialsException("Cabeçalhos X-User-Id e X-User-Role são obrigatórios");
             }
 
-            // 🔹 Usa a role como veio no header (ex: ADMIN ou USER)
-            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
+            // ✅ Garante que a role já esteja no formato ROLE_*
+            String normalizedRole = role.startsWith("ROLE_") ? role : "ROLE_" + role;
+
+            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(normalizedRole));
 
             UsernamePasswordAuthenticationToken auth =
                     new UsernamePasswordAuthenticationToken(userId, "N/A", authorities);
