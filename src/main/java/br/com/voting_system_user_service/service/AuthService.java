@@ -93,7 +93,7 @@ public class AuthService {
         .secure(true)
         .sameSite("None")
         .path("/")
-        .domain(".onrender.com")
+        .domain("voting-system-api-gateway.onrender.com")
         .maxAge(0)
         .build();
 
@@ -102,7 +102,7 @@ public class AuthService {
         .secure(true)
         .sameSite("None")
         .path("/")
-        .domain(".onrender.com")
+        .domain("voting-system-api-gateway.onrender.com")
         .maxAge(0)
         .build();
 
