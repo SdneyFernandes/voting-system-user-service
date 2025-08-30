@@ -1,25 +1,14 @@
-
-
 package br.com.voting_system_user_service.service;
 
 import br.com.voting_system_user_service.repository.UserRepository;
 import br.com.voting_system_user_service.dto.*;
 import br.com.voting_system_user_service.entity.User;
-
 import io.micrometer.core.instrument.MeterRegistry;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-// ... outros imports existentes
-import org.springframework.http.HttpHeaders; // ✅ Adicionar
-import org.springframework.http.ResponseCookie; // ✅ Adicionar
-import jakarta.servlet.http.HttpServletResponse;
-
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -37,6 +26,7 @@ public class AuthService {
     }
 
     public String registerUser(RegisterRequest request) {
+        // ... (este método continua igual)
         long startTime = System.currentTimeMillis();
         meterRegistry.counter("usuario.registro.chamadas").increment();
         logger.info("Recebida requisição para registrar usuário com nome {}", request.getUserName());
@@ -62,6 +52,7 @@ public class AuthService {
     }
 
     public UserDTO loginUser(LoginRequest request) {
+        // ... (este método continua igual)
         long startTime = System.currentTimeMillis();
         meterRegistry.counter("usuario.login.chamadas").increment();
         logger.info("Recebida requisição de login com e-mail: {}", request.getEmail());
@@ -84,32 +75,11 @@ public class AuthService {
         return new UserDTO(user);
     }
 
-    public void logoutUser(HttpServletResponse response) {
-    logger.info("Recebida requisição para logout de usuário (AuthService)");
-
-    // 🔹 Usar ResponseCookie consistentemente com o login
-    ResponseCookie userIdCookie = ResponseCookie.from("userId", "")
-        .httpOnly(false)
-        .secure(true)
-        .sameSite("None")
-        .path("/")
-        .domain("voting-system-api-gateway.onrender.com")
-        .maxAge(0)
-        .build();
-
-    ResponseCookie roleCookie = ResponseCookie.from("role", "")
-        .httpOnly(false)
-        .secure(true)
-        .sameSite("None")
-        .path("/")
-        .domain("voting-system-api-gateway.onrender.com")
-        .maxAge(0)
-        .build();
-
-    // ✅ CORREÇÃO: Usar addHeader corretamente
-    response.addHeader(HttpHeaders.SET_COOKIE, userIdCookie.toString());
-    response.addHeader(HttpHeaders.SET_COOKIE, roleCookie.toString());
-
-    logger.info("Cookies de usuário removidos (AuthService)");
-}
+    // <-- MUDANÇA: Método simplificado para não manipular cookies
+    public void logoutUser() {
+        logger.info("Logout processado no AuthService (sem manipulação de cookies)");
+        // A lógica de criar e adicionar cookies com maxAge(0) foi removida.
+        // O Gateway será responsável por limpar os cookies do navegador.
+        // Aqui você poderia adicionar outra lógica se necessário (ex: invalidar um token no BD).
+    }
 }
