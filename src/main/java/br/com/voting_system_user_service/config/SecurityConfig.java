@@ -46,10 +46,9 @@ public class SecurityConfig {
                 ).permitAll()
 
                 // ADMIN
-                .requestMatchers("/api/users/**").hasAuthority("ADMIN")
-                .requestMatchers("/api/votes_session/create").hasAuthority("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/votes_session/*/delete").hasAuthority("ADMIN")
-                .requestMatchers("/api/internal/**").permitAll()
+                .requestMatchers("/api/users/**").hasRole("ADMIN") // Mais limpo
+            .requestMatchers("/api/votes_session/create").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.DELETE, "/api/votes_session/*/delete").hasRole("ADMIN")
 
                 // Autenticados (USER ou ADMIN)
                 .requestMatchers("/api/votes_session/**").authenticated()
@@ -84,28 +83,30 @@ public class SecurityConfig {
         return filter;
     }
 
-    @Bean
-    public AuthenticationManager authenticationManager() {
-        return authentication -> {
-            String userId = (String) authentication.getPrincipal();
-            String role = (String) authentication.getCredentials();
+    // Em br.com.voting_system_user_service.config.SecurityConfig
 
-            logger.info("Cabeçalhos recebidos - X-User-Id: {}, X-User-Role: {}", userId, role);
+@Bean
+public AuthenticationManager authenticationManager() {
+    return authentication -> {
+        String userId = (String) authentication.getPrincipal();
+        String role = (String) authentication.getCredentials();
 
-            if (userId == null || role == null) {
-                throw new BadCredentialsException("Cabeçalhos X-User-Id e X-User-Role são obrigatórios");
-            }
+        logger.info("Cabeçalhos recebidos - X-User-Id: {}, X-User-Role: {}", userId, role);
 
-            // 🔹 Usa a role como veio no header (ex: ADMIN ou USER)
-            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
+        if (userId == null || role == null) {
+            throw new BadCredentialsException("Cabeçalhos X-User-Id e X-User-Role são obrigatórios");
+        }
 
-            UsernamePasswordAuthenticationToken auth =
-                    new UsernamePasswordAuthenticationToken(userId, "N/A", authorities);
+        // ✅ MUDANÇA PRINCIPAL AQUI: Adicione o prefixo "ROLE_"
+        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
 
-            logger.info("Usuário autenticado corretamente: {} com authorities {}", userId, authorities);
-            return auth;
-        };
-    }
+        UsernamePasswordAuthenticationToken auth =
+                new UsernamePasswordAuthenticationToken(userId, "N/A", authorities);
+
+        logger.info("Usuário autenticado corretamente: {} com authorities {}", userId, authorities);
+        return auth;
+    };
+}
 
     @Bean
     public PasswordEncoder passwordEncoder() {
