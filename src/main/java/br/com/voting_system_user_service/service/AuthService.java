@@ -29,7 +29,7 @@ public class AuthService {
         // ... (este método continua igual)
         long startTime = System.currentTimeMillis();
         meterRegistry.counter("usuario.registro.chamadas").increment();
-        logger.info("Recebida requisição para registrar usuário com nome {}", request.getUserName());
+        logger.info("Reccebida requisição para registrar usuário com nome {}", request.getUserName());
 
         if (userRepository.existsByEmail(request.getEmail())) {
             logger.warn("Tentativa de registro falhou, ja existe um usuario cadastrado com esse e-mail {}", request.getEmail());
