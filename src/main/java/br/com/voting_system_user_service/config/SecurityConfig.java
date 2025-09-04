@@ -45,6 +45,8 @@ public class SecurityConfig {
                         "/h2-console/**"
                 ).permitAll()
 
+                .requestMatchers(HttpMethod.GET, "/api/users/{id}").hasAnyRole("USER", "ADMIN")
+
                 // ADMIN
                 .requestMatchers("/api/users/**").hasRole("ADMIN") // Mais limpo
             .requestMatchers("/api/votes_session/create").hasRole("ADMIN")
