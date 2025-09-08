@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.beans.factory.annotation.Value; 
+import java.util.List;
+
 @Service
 public class AuthService {
 
@@ -19,6 +22,9 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+@Value("${REGISTRATION_WHITELIST_EMAILS:}") // <-- ADICIONE ESTA LINHA
+    private List<String> allowedEmails;
+
     public AuthService(PasswordEncoder passwordEncoder, UserRepository userRepository, MeterRegistry meterRegistry) {
         this.userRepository = userRepository;
         this.meterRegistry = meterRegistry;
@@ -26,11 +32,17 @@ public class AuthService {
     }
 
     public String registerUser(RegisterRequest request) {
-        // ... (este método continua igual)
-        long startTime = System.currentTimeMillis();
-        meterRegistry.counter("usuario.registro.chamadas").increment();
-        logger.info("Reccebida requisição para registrar usuário com nome {}", request.getUserName());
+       long startTime = System.currentTimeMillis();
+    meterRegistry.counter("usuario.registro.chamadas").increment();
+    logger.info("Reccebida requisição para registrar usuário com nome {}", request.getUserName());
 
+    // --- LÓGICA DE VERIFICAÇÃO ADICIONADA ---
+    if (allowedEmails != null && !allowedEmails.isEmpty()) {
+        if (!allowedEmails.contains(request.getEmail())) {
+            logger.warn("[REGISTRO BLOQUEADO] Tentativa de registro com email não autorizado: {}", request.getEmail());
+            throw new RuntimeException("Este email não está autorizado a se registrar no momento.");
+        }
+    }
         if (userRepository.existsByEmail(request.getEmail())) {
             logger.warn("Tentativa de registro falhou, ja existe um usuario cadastrado com esse e-mail {}", request.getEmail());
             throw new RuntimeException("E-mail já cadastrado.");
