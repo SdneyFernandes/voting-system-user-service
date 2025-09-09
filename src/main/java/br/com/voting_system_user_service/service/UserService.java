@@ -2,6 +2,7 @@ package br.com.voting_system_user_service.service;
 
 import br.com.voting_system_user_service.repository.UserRepository;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 import br.com.voting_system_user_service.dto.UserDTO;
 import br.com.voting_system_user_service.entity.User;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,14 +15,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
+import io.micrometer.core.annotation.Timed;
 
 /**
  * @author fsdney
  */
-
-
-
 
 @Service
 public class UserService {
@@ -37,113 +35,94 @@ private static final Logger logger = LoggerFactory.getLogger(UserService.class);
  }
 	
 	@PreAuthorize("hasRole('ADMIN')")
-	public List<UserDTO> getAllUsers() {
-		logger.info("Recebida requisição para listar todos os usuários.");
-        meterRegistry.counter("usuario.listar.todas.chamadas").increment();
+    @Timed("usuarios.operacoes.tempo", "operacao", "listar_todos")
+    public List<UserDTO> getAllUsers() {
+        logger.info("Recebida requisição para listar todos os usuários.");
+        meterRegistry.counter("usuarios.operacoes.chamadas", "operacao", "listar_todos").increment();
         
-        long start = System.currentTimeMillis();
         List<User> users = userRepository.findAll();
-        long end = System.currentTimeMillis();
-        meterRegistry.timer("usuario.listar.todas.tempo").record(end - start, TimeUnit.MILLISECONDS);
         
         if (users.isEmpty()) {
-        	logger.warn("Lista de usuários retornou vazia.");
-            meterRegistry.counter("usuario.listar.todas.vazio").increment();
+            logger.warn("Lista de usuários retornou vazia.");
         } else {
-        	 logger.info(" {} usuários encontrados", users.size());
-	         meterRegistry.counter("usuario.listar.todas.sucesso").increment();
-	         meterRegistry.gauge("usuario.listar.todas.quantidade", users, List::size);
+            logger.info("{} usuários encontrados", users.size());
         } 
         
         return users.stream().map(UserDTO::new).collect(Collectors.toList());
-	}
+    }
 	
 	
 	
-	public Optional<UserDTO> getUserById(Long id) {
-		logger.info("Recebida requisição para buscar usuário com ID {}", id);
-        meterRegistry.counter("usuario.buscar.id.chamadas").increment();
-
-        long start = System.currentTimeMillis();     
-		Optional<User> user = userRepository.findById(id);
-		long end = System.currentTimeMillis();
-        meterRegistry.timer("usuario.buscar.id.tempo").record(end - start, TimeUnit.MILLISECONDS);
+	@Timed("usuarios.operacoes.tempo", "operacao", "buscar_por_id")
+    public Optional<UserDTO> getUserById(Long id) {
+        logger.info("Recebida requisição para buscar usuário com ID {}", id);
+        meterRegistry.counter("usuarios.operacoes.chamadas", "operacao", "buscar_por_id").increment();
+        Optional<User> user = userRepository.findById(id);
         
         if (user.isPresent()) {
-        	logger.info("Usuário encontrado ",  user.get());
-            meterRegistry.counter("usuario.buscar.id.sucesso").increment();
+            logger.info("Usuário encontrado {}",  user.get().getUserName());
+            meterRegistry.counter("usuarios.busca.resultado", "tipo", "id", "status", "encontrado").increment();
         } else {
-        	logger.warn("Usuário com ID {} não encontrado.", id);
-            meterRegistry.counter("usuario.buscar.id.naoencontrado").increment();
+            logger.warn("Usuário com ID {} não encontrado.", id);
+            meterRegistry.counter("usuarios.busca.resultado", "tipo", "id", "status", "nao_encontrado").increment();
         }
         
         return user.map(UserDTO::new);
-	}
+    }
 	
 	
 	 @PreAuthorize("hasRole('ADMIN')")
+	 @Timed("usuarios.operacoes.tempo", "operacao", "buscar_por_Nome")
 	 public Optional<UserDTO> getUserByName(String userName) {
 	        logger.info("Recebida requisição para buscar usuário com Nome {}", userName);
-	        meterRegistry.counter("usuario.buscar.nome.chamadas").increment();
-
-	        long start = System.currentTimeMillis();
+	        meterRegistry.counter("usuarios.operacoes.chamadas", "operacao", "buscar_por_Nome").increment();
 	        Optional<User> user = userRepository.findByUserName(userName);
-	        long end = System.currentTimeMillis();
-	        meterRegistry.timer("usuario.buscar.nome.tempo").record(end - start, TimeUnit.MILLISECONDS);
 
 	        if (user.isPresent()) {
 	            logger.info("Usuário encontrado {}", user.get());
-	            meterRegistry.counter("usuario.buscar.nome.sucesso").increment();
+	            meterRegistry.counter("usuarios.busca.resultado", "tipo", "Nome", "status", "encontrado").increment();
 	        } else {
 	            logger.warn("Usuário com nome {} não encontrado.", userName);
-	            meterRegistry.counter("usuario.buscar.nome.naoencontrado").increment();
+	            meterRegistry.counter("usuarios.busca.resultado", "tipo", "Nome", "status", "nao_encontrado").increment();
 	        }
 
 	        return user.map(UserDTO::new);
 	    }
 	
-	 @PreAuthorize("hasRole('ADMIN')")
-	 public boolean deleteUserById(Long id) {
-	        logger.info("Recebida requisição para deletar usuário com ID {}", id);
-	        meterRegistry.counter("usuario.deletar.id.chamadas").increment();
+	@PreAuthorize("hasRole('ADMIN')")
+    @Timed("usuarios.operacoes.tempo", "operacao", "deletar_por_id")
+    public boolean deleteUserById(Long id) {
+        logger.info("Recebida requisição para deletar usuário com ID {}", id);
+        meterRegistry.counter("usuarios.operacoes.chamadas", "operacao", "deletar_por_id").increment();
 
-	        long start = System.currentTimeMillis();
-	        Optional<User> userExist = userRepository.findById(id);
-	        
-	        if (userExist.isPresent()) {
-	            userRepository.deleteById(id);
-	            logger.info("Usuário deletado com sucesso.");
-	            meterRegistry.counter("usuario.deletar.id.sucesso").increment();
-	            meterRegistry.timer("usuario.deletar.id.tempo").record(System.currentTimeMillis() - start, TimeUnit.MILLISECONDS);
-	            return true;
-	        } else {
-	            logger.warn("Usuário com ID {} não encontrado para exclusão.", id);
-	            meterRegistry.counter("usuario.deletar.id.naoencontrado").increment();
-	            meterRegistry.timer("usuario.deletar.id.tempo").record(System.currentTimeMillis() - start, TimeUnit.MILLISECONDS);
-	            return false;
-	        }
-	    }
+        if (userRepository.existsById(id)) {
+            userRepository.deleteById(id);
+            logger.info("Usuário deletado com sucesso.");
+            meterRegistry.counter("usuarios.delete.resultado", "status", "sucesso").increment();
+            return true;
+        } else {
+            logger.warn("Usuário com ID {} não encontrado para exclusão.", id);
+            meterRegistry.counter("usuarios.delete.resultado", "status", "nao_encontrado").increment();
+            return false;
+        }
+    }
 	 
 	 
 	 @PreAuthorize("hasRole('ADMIN')")
+	 @Timed("usuarios.operacoes.tempo", "operacao", "deletar_por_nome")
 	 public boolean deleteUserByName(String userName) {
 	        logger.info("Recebida requisição para deletar usuário com nome {}", userName);
-	        meterRegistry.counter("usuario.deletar.nome.chamadas").increment();
-
-	        long start = System.currentTimeMillis();
+	        meterRegistry.counter("usuarios.operacoes.chamadas", "operacao", "deletar_por_nome").increment();
 	        Optional<User> userExist = userRepository.findByUserName(userName);
 
 	        if (userExist.isPresent()) {
 	            userRepository.delete(userExist.get());
 	            logger.info("Usuário deletado com sucesso.", userName);
-	            meterRegistry.counter("usuario.deletar.nome.sucesso").increment();
-	            meterRegistry.timer("usuario.deletar.nome.tempo").record(System.currentTimeMillis() - start, TimeUnit.MILLISECONDS);
-	            return true;
+	            meterRegistry.counter("usuarios.delete.resultado", "status", "sucesso").increment();return true;
 	        } else {
 	            logger.warn("Usuário com nome {} não encontrado para exclusão.", userName);
-	            meterRegistry.counter("usuario.deletar.nome.naoencontrado").increment();
-	            meterRegistry.timer("usuario.deletar.nome.tempo").record(System.currentTimeMillis() - start, TimeUnit.MILLISECONDS);
-	            return false;
+	            meterRegistry.counter("usuarios.delete.resultado", "status", "nao_encontrado").increment();
+				return false;
 	        }
 	    }
 	}

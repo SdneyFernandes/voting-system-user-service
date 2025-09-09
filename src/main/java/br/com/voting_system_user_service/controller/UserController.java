@@ -20,10 +20,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * @author fsdney
  */
 
-
-
-@Tag(name = "Usuários", description = "Endpoints para gerenciamento de usuários")
-@SecurityRequirement(name = "bearerAuth")
+//@Tag(name = "Usuários", description = "Endpoints para gerenciamento de usuários")
+//@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -37,14 +35,14 @@ public class UserController {
 
     }
 
-    @Operation(summary = "Listar", description = "Método para listar todos os usuários")
+    //@Operation(summary = "Listar", description = "Método para listar todos os usuários")
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         List<UserDTO> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
     }
 
-    @Operation(summary = "Buscar Por Id", description = "Método para buscar um usuário por ID")
+    //@Operation(summary = "Buscar Por Id", description = "Método para buscar um usuário por ID")
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable("id") Long id) {
         return userService.getUserById(id)
@@ -52,7 +50,7 @@ public class UserController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    @Operation(summary = "Buscar Por Nome", description = "Método para buscar um usuário por Nome")
+    //@Operation(summary = "Buscar Por Nome", description = "Método para buscar um usuário por Nome")
     @GetMapping("/userName/{userName}")
     public ResponseEntity<UserDTO> getUserByName(@PathVariable("userName") String userName) {
         return userService.getUserByName(userName)
@@ -60,7 +58,7 @@ public class UserController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    @Operation(summary = "Deletar Por Id", description = "Método para deletar um usuário por ID")
+    //@Operation(summary = "Deletar Por Id", description = "Método para deletar um usuário por ID")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUserById(@PathVariable("id") Long id) {
         boolean removed = userService.deleteUserById(id);
@@ -72,7 +70,7 @@ public class UserController {
         }
     }
 
-    @Operation(summary = "Deletar Por Nome", description = "Método para deletar um usuário por Nome")
+    //@Operation(summary = "Deletar Por Nome", description = "Método para deletar um usuário por Nome")
     @DeleteMapping("/userName/{userName}")
     public ResponseEntity<String> deleteUserByName(@PathVariable("userName") String userName) {
         boolean removed = userService.deleteUserByName(userName);

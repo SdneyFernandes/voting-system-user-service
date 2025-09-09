@@ -22,6 +22,10 @@ import org.springframework.security.web.authentication.preauth.AbstractPreAuthen
 
 import java.util.List;
 
+/**
+ * @author fsdney
+ */
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -48,7 +52,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/users/{id}").hasAnyRole("USER", "ADMIN")
 
                 // ADMIN
-                .requestMatchers("/api/users/**").hasRole("ADMIN") // Mais limpo
+                .requestMatchers("/api/users/**").hasRole("ADMIN")
             .requestMatchers("/api/votes_session/create").hasRole("ADMIN")
             .requestMatchers(HttpMethod.DELETE, "/api/votes_session/*/delete").hasRole("ADMIN")
 
@@ -85,8 +89,6 @@ public class SecurityConfig {
         return filter;
     }
 
-    // Em br.com.voting_system_user_service.config.SecurityConfig
-
 @Bean
 public AuthenticationManager authenticationManager() {
     return authentication -> {
@@ -99,7 +101,6 @@ public AuthenticationManager authenticationManager() {
             throw new BadCredentialsException("Cabeçalhos X-User-Id e X-User-Role são obrigatórios");
         }
 
-        // ✅ MUDANÇA PRINCIPAL AQUI: Adicione o prefixo "ROLE_"
         List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
 
         UsernamePasswordAuthenticationToken auth =

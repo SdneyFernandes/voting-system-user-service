@@ -1,6 +1,5 @@
 package br.com.voting_system_user_service.entity;
 
-
 import br.com.voting_system_user_service.enums.Role;
 import jakarta.persistence. *;
 import jakarta.validation.constraints. *;
@@ -12,6 +11,7 @@ import java.time.LocalDate;
 /**
  * @author fsdney
  */
+
 @Entity
 @Data
 @NoArgsConstructor
