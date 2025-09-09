@@ -37,14 +37,11 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-
-            .requestMatchers(EndpointRequest.to("health", "info", "prometheus")).permitAll()
-   
                 // Rotas públicas
                 .requestMatchers(
     
                         "/api/users/register",
-                       
+                       "/actuator/**",
                         "/api/users/login",
                         "/api/users/logout",
                         "/api/auth/service-token",
@@ -84,8 +81,9 @@ public AbstractPreAuthenticatedProcessingFilter preAuthenticatedProcessingFilter
         @Override
         protected Object getPreAuthenticatedPrincipal(HttpServletRequest request) {
             String path = request.getRequestURI();
+            // Ignora autenticação para actuator
             if (path.startsWith("/actuator")) {
-                return "system"; 
+                return null; 
             }
             return request.getHeader("X-User-Id");
         }
@@ -93,8 +91,9 @@ public AbstractPreAuthenticatedProcessingFilter preAuthenticatedProcessingFilter
         @Override
         protected Object getPreAuthenticatedCredentials(HttpServletRequest request) {
             String path = request.getRequestURI();
+            // Ignora autenticação para actuator
             if (path.startsWith("/actuator")) {
-                return "SYSTEM"; // ignora headers no actuator
+                return null;
             }
             return request.getHeader("X-User-Role");
         }
@@ -102,6 +101,7 @@ public AbstractPreAuthenticatedProcessingFilter preAuthenticatedProcessingFilter
     filter.setAuthenticationManager(authenticationManager());
     return filter;
 }
+
 
 
 @Bean
