@@ -62,7 +62,8 @@ public class AuthController {
             return ResponseEntity.ok().body(Map.of(
                     "message", "Login successful",
                     "userId", user.getId(),
-                    "role", user.getRole().name()
+                    "role", user.getRole().name(),
+                    "userName", user.getUserName() 
             ));
         } catch (RuntimeException ex) {
             logger.warn("Falha no login: {}", ex.getMessage());
