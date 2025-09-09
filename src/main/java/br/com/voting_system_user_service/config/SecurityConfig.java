@@ -36,11 +36,13 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
+            .requestMatchers(EndpointRequest.to("prometheus", "health", "info")).permitAll()
+
                 // Rotas públicas
                 .requestMatchers(
-                        "/actuator/health",
+
                         "/api/users/register",
-                        "/actuator/prometheus",
+                        
                         "/api/users/login",
                         "/api/users/logout",
                         "/api/auth/service-token",
