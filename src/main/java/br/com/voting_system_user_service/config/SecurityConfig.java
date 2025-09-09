@@ -92,7 +92,8 @@ public AuthenticationManager authenticationManager() {
     return authentication -> {
         String userId = (String) authentication.getPrincipal();
         String role = (String) authentication.getCredentials();
-
+        logger.info("Tentativa de autenticação - X-User-Id: {}, X-User-Role: {}", userId, role);
+        logger.info("Request path: {}", request.getRequestURI());
         logger.info("Cabeçalhos recebidos - X-User-Id: {}, X-User-Role: {}", userId, role);
 
         if (userId == null || role == null) {
