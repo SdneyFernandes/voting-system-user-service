@@ -53,7 +53,7 @@ private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 	
 	
 	
-	@Timed("usuarios.operacoes.tempo", extraTags ={"operacao", "buscar_por_id"})
+	@Timed(value = "usuarios.operacoes.tempo", extraTags ={"operacao", "buscar_por_id"})
     public Optional<UserDTO> getUserById(Long id) {
         logger.info("Recebida requisição para buscar usuário com ID {}", id);
         meterRegistry.counter("usuarios.operacoes.chamadas", "operacao", "buscar_por_id").increment();
@@ -72,7 +72,7 @@ private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 	
 	
 	 @PreAuthorize("hasRole('ADMIN')")
-	 @Timed("usuarios.operacoes.tempo", extraTags ={"operacao", "buscar_por_Nome"})
+	 @Timed(value = "usuarios.operacoes.tempo", extraTags ={"operacao", "buscar_por_Nome"})
 	 public Optional<UserDTO> getUserByName(String userName) {
 	        logger.info("Recebida requisição para buscar usuário com Nome {}", userName);
 	        meterRegistry.counter("usuarios.operacoes.chamadas", "operacao", "buscar_por_Nome").increment();
@@ -90,7 +90,7 @@ private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 	    }
 	
 	@PreAuthorize("hasRole('ADMIN')")
-    @Timed("usuarios.operacoes.tempo", extraTags = {"operacao", "deletar_por_id"})
+    @Timed(value ="usuarios.operacoes.tempo", extraTags = {"operacao", "deletar_por_id"})
     public boolean deleteUserById(Long id) {
         logger.info("Recebida requisição para deletar usuário com ID {}", id);
         meterRegistry.counter("usuarios.operacoes.chamadas", "operacao", "deletar_por_id").increment();
@@ -109,7 +109,7 @@ private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 	 
 	 
 	 @PreAuthorize("hasRole('ADMIN')")
-	 @Timed("usuarios.operacoes.tempo", extraTags = {"operacao", "deletar_por_nome"})
+	 @Timed(value = "usuarios.operacoes.tempo", extraTags = {"operacao", "deletar_por_nome"})
 	 public boolean deleteUserByName(String userName) {
 	        logger.info("Recebida requisição para deletar usuário com nome {}", userName);
 	        meterRegistry.counter("usuarios.operacoes.chamadas", "operacao", "deletar_por_nome").increment();
