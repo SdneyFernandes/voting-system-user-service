@@ -38,7 +38,8 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
 
-            .requestMatchers("/actuator/**").permitAll()
+            .requestMatchers(EndpointRequest.to("health", "info", "prometheus")).permitAll()
+   
                 // Rotas públicas
                 .requestMatchers(
     
