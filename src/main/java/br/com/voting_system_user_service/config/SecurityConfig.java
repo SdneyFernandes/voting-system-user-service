@@ -36,6 +36,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Actuator sem autenticação
                 .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll()
+
 
                 // Rotas públicas
                 .requestMatchers(
