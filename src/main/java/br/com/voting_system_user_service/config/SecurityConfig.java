@@ -93,14 +93,14 @@ public AuthenticationManager authenticationManager() {
         String userId = (String) authentication.getPrincipal();
         String role = (String) authentication.getCredentials();
         logger.info("Tentativa de autenticação - X-User-Id: {}, X-User-Role: {}", userId, role);
-        logger.info("Request path: {}", request.getRequestURI());
+        // REMOVA ESTA LINHA ↓↓↓
+        // logger.info("Request path: {}", request.getRequestURI());
         logger.info("Cabeçalhos recebidos - X-User-Id: {}, X-User-Role: {}", userId, role);
 
         if (userId == null || role == null) {
             throw new BadCredentialsException("Cabeçalhos X-User-Id e X-User-Role são obrigatórios");
         }
 
-        
         List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
 
         UsernamePasswordAuthenticationToken auth =
