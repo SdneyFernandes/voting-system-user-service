@@ -3,6 +3,8 @@ package br.com.voting_system_user_service.config;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -19,13 +21,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
-import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 
 import java.util.List;
-
-/**
- * @author fsdney
- */
 
 @Configuration
 @EnableWebSecurity
@@ -37,11 +34,12 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
+                // Actuator sem autenticação
+                .requestMatchers("/actuator/**").permitAll()
+
                 // Rotas públicas
                 .requestMatchers(
-    
                         "/api/users/register",
-                       "/actuator/**",
                         "/api/users/login",
                         "/api/users/logout",
                         "/api/auth/service-token",
@@ -56,8 +54,8 @@ public class SecurityConfig {
 
                 // ADMIN
                 .requestMatchers("/api/users/**").hasRole("ADMIN")
-            .requestMatchers("/api/votes_session/create").hasRole("ADMIN")
-            .requestMatchers(HttpMethod.DELETE, "/api/votes_session/*/delete").hasRole("ADMIN")
+                .requestMatchers("/api/votes_session/create").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/votes_session/*/delete").hasRole("ADMIN")
 
                 // Autenticados (USER ou ADMIN)
                 .requestMatchers("/api/votes_session/**").authenticated()
@@ -70,61 +68,63 @@ public class SecurityConfig {
             .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
+        // filtro continua sendo registrado, mas via FilterRegistrationBean
         http.addFilterBefore(preAuthenticatedProcessingFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
     @Bean
-public AbstractPreAuthenticatedProcessingFilter preAuthenticatedProcessingFilter() {
-    AbstractPreAuthenticatedProcessingFilter filter = new AbstractPreAuthenticatedProcessingFilter() {
-        @Override
-        protected Object getPreAuthenticatedPrincipal(HttpServletRequest request) {
-            String path = request.getRequestURI();
-            // Ignora autenticação para actuator
-            if (path.startsWith("/actuator")) {
-                return null; 
+    public AbstractPreAuthenticatedProcessingFilter preAuthenticatedProcessingFilter() {
+        AbstractPreAuthenticatedProcessingFilter filter = new AbstractPreAuthenticatedProcessingFilter() {
+            @Override
+            protected Object getPreAuthenticatedPrincipal(HttpServletRequest request) {
+                return request.getHeader("X-User-Id");
             }
-            return request.getHeader("X-User-Id");
-        }
 
-        @Override
-        protected Object getPreAuthenticatedCredentials(HttpServletRequest request) {
-            String path = request.getRequestURI();
-            // Ignora autenticação para actuator
-            if (path.startsWith("/actuator")) {
-                return null;
+            @Override
+            protected Object getPreAuthenticatedCredentials(HttpServletRequest request) {
+                return request.getHeader("X-User-Role");
             }
-            return request.getHeader("X-User-Role");
-        }
-    };
-    filter.setAuthenticationManager(authenticationManager());
-    return filter;
-}
+        };
+        filter.setAuthenticationManager(authenticationManager());
+        return filter;
+    }
 
+    /**
+     * Desabilita o filtro customizado para /actuator/**
+     */
+    @Bean
+    public FilterRegistrationBean<AbstractPreAuthenticatedProcessingFilter> registration(
+            AbstractPreAuthenticatedProcessingFilter filter) {
+        FilterRegistrationBean<AbstractPreAuthenticatedProcessingFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(true);
+        // ignora actuator
+        registration.addUrlPatterns("/api/*"); // aplica só para sua API
+        return registration;
+    }
 
+    @Bean
+    public AuthenticationManager authenticationManager() {
+        return authentication -> {
+            String userId = (String) authentication.getPrincipal();
+            String role = (String) authentication.getCredentials();
 
-@Bean
-public AuthenticationManager authenticationManager() {
-    return authentication -> {
-        String userId = (String) authentication.getPrincipal();
-        String role = (String) authentication.getCredentials();
+            logger.info("Cabeçalhos recebidos - X-User-Id: {}, X-User-Role: {}", userId, role);
 
-        logger.info("Cabeçalhos recebidos - X-User-Id: {}, X-User-Role: {}", userId, role);
+            if (userId == null || role == null) {
+                throw new BadCredentialsException("Cabeçalhos X-User-Id e X-User-Role são obrigatórios");
+            }
 
-        if (userId == null || role == null) {
-            throw new BadCredentialsException("Cabeçalhos X-User-Id e X-User-Role são obrigatórios");
-        }
+            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
 
-        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+            UsernamePasswordAuthenticationToken auth =
+                    new UsernamePasswordAuthenticationToken(userId, "N/A", authorities);
 
-        UsernamePasswordAuthenticationToken auth =
-                new UsernamePasswordAuthenticationToken(userId, "N/A", authorities);
-
-        logger.info("Usuário autenticado corretamente: {} com authorities {}", userId, authorities);
-        return auth;
-    };
-}
+            logger.info("Usuário autenticado corretamente: {} com authorities {}", userId, authorities);
+            return auth;
+        };
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
