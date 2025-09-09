@@ -20,6 +20,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
+
 import java.util.List;
 
 /**
@@ -36,13 +37,13 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-            .requestMatchers(EndpointRequest.to("prometheus", "health", "info")).permitAll()
 
+            .requestMatchers("/actuator/**").permitAll()
                 // Rotas públicas
                 .requestMatchers(
-
+    
                         "/api/users/register",
-                        
+                       
                         "/api/users/login",
                         "/api/users/logout",
                         "/api/auth/service-token",
