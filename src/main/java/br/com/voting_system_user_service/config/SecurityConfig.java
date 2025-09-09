@@ -79,21 +79,30 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AbstractPreAuthenticatedProcessingFilter preAuthenticatedProcessingFilter() {
-        AbstractPreAuthenticatedProcessingFilter filter = new AbstractPreAuthenticatedProcessingFilter() {
-            @Override
-            protected Object getPreAuthenticatedPrincipal(HttpServletRequest request) {
-                return request.getHeader("X-User-Id");
+public AbstractPreAuthenticatedProcessingFilter preAuthenticatedProcessingFilter() {
+    AbstractPreAuthenticatedProcessingFilter filter = new AbstractPreAuthenticatedProcessingFilter() {
+        @Override
+        protected Object getPreAuthenticatedPrincipal(HttpServletRequest request) {
+            String path = request.getRequestURI();
+            if (path.startsWith("/actuator")) {
+                return "system"; 
             }
+            return request.getHeader("X-User-Id");
+        }
 
-            @Override
-            protected Object getPreAuthenticatedCredentials(HttpServletRequest request) {
-                return request.getHeader("X-User-Role");
+        @Override
+        protected Object getPreAuthenticatedCredentials(HttpServletRequest request) {
+            String path = request.getRequestURI();
+            if (path.startsWith("/actuator")) {
+                return "SYSTEM"; // ignora headers no actuator
             }
-        };
-        filter.setAuthenticationManager(authenticationManager());
-        return filter;
-    }
+            return request.getHeader("X-User-Role");
+        }
+    };
+    filter.setAuthenticationManager(authenticationManager());
+    return filter;
+}
+
 
 @Bean
 public AuthenticationManager authenticationManager() {
