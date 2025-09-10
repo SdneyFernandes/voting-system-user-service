@@ -21,10 +21,8 @@ public class DatabaseMetrics {
         this.userRepository = userRepository;
     }
 
-    @PostConstruct // Este método será executado uma vez após a inicialização do componente
+    @PostConstruct
     public void bindMetrics() {
-        // Métrica GAUGE para monitorar o número total de usuários no banco de dados.
-        // Micrometer irá chamar a função userRepository::count periodicamente para obter o valor.
         Gauge.builder("database.users.total", userRepository, UserRepository::count)
             .description("Número total de usuários registrados na base de dados")
             .register(meterRegistry);

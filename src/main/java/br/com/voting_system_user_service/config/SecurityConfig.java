@@ -22,6 +22,12 @@ import org.springframework.security.web.authentication.preauth.AbstractPreAuthen
 
 import java.util.List;
 
+
+/**
+ * @author fsdney
+ */
+
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -93,8 +99,6 @@ public AuthenticationManager authenticationManager() {
         String userId = (String) authentication.getPrincipal();
         String role = (String) authentication.getCredentials();
         logger.info("Tentativa de autenticação - X-User-Id: {}, X-User-Role: {}", userId, role);
-        // REMOVA ESTA LINHA ↓↓↓
-        // logger.info("Request path: {}", request.getRequestURI());
         logger.info("Cabeçalhos recebidos - X-User-Id: {}, X-User-Role: {}", userId, role);
 
         if (userId == null || role == null) {

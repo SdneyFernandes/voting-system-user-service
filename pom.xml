@@ -37,11 +37,11 @@
     </dependencyManagement>
 
     <dependencies>
-        <!-- Spring Boot Starters -->
+       
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <!-- Excluir versões conflitantes do Jackson -->
+           
             <exclusions>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
@@ -58,7 +58,7 @@
             </exclusions>
         </dependency>
         
-        <!-- Outras dependências do Spring -->
+        
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -77,13 +77,13 @@
         <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
     </dependency>
 
-    <!-- Adicione esta dependência na seção <dependencies> -->
+    
 <dependency>
     <groupId>io.micrometer</groupId>
     <artifactId>micrometer-registry-prometheus</artifactId>
 </dependency>
 
-        <!-- Dependências explícitas do Jackson -->
+       
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
@@ -100,7 +100,7 @@
             <version>${jackson.version}</version>
         </dependency>
 
-        <!-- Banco de Dados -->
+       
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
